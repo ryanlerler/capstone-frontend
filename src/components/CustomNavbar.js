@@ -3,11 +3,12 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../App";
+import "../css/CustomNavbar.css";
 
 export default function CustomNavbar() {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
   const navigate = useNavigate();
-  const user = useContext(UserContext);
+  const value = useContext(UserContext);
 
   const handleNavLinkClick = (path) => {
     if (!isAuthenticated) {
@@ -22,7 +23,7 @@ export default function CustomNavbar() {
       <Navbar expand="lg" className="bg-body-tertiary" fixed="top">
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
-          <Navbar.Brand href="#home">Co-living</Navbar.Brand>
+          <Navbar.Brand href="/">Co-living</Navbar.Brand>
           <Nav
             className="me-auto my-2 my-lg-0"
             style={{ maxHeight: "100px" }}
@@ -42,7 +43,7 @@ export default function CustomNavbar() {
                   <div className="profile">
                     <img
                       src={
-                        user.picture ||
+                        value.loggedInUser.profilePicUrl ||
                         "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png"
                       }
                       alt="profile"
@@ -53,16 +54,19 @@ export default function CustomNavbar() {
                 id="navbarScrollingDropdown"
               >
                 <NavDropdown.Item>
-                  {user.email}
-                  <NavDropdown.Divider />
-
                   <Button
-                    onClick={() => handleNavLinkClick("/users/update")}
+                    onClick={() => handleNavLinkClick("/user/dashboard")}
                     variant="light"
                   >
-                    Profile
+                    Dashboard
                   </Button>
-
+                  <NavDropdown.Divider />
+                  <Button
+                    onClick={() => handleNavLinkClick("/user/update")}
+                    variant="light"
+                  >
+                    Update Profile
+                  </Button>
                   <NavDropdown.Divider />
                   <Button
                     onClick={() =>

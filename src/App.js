@@ -13,23 +13,22 @@ import ListingUpdateForm from "./pages/ListingUpdateForm";
 import AddPropertyForm from "./pages/AddPropertyForm";
 import Conversation from "./pages/Conversation";
 import CustomNavbar from "./components/CustomNavbar";
+import Dashboard from "./pages/Dashboard";
 
 export const UserContext = createContext();
 
 function App() {
   const [listing, setListing] = useState({});
-  const [loggedInUser, setLoggedInUser] = useState("");
-  const { user } = useAuth0();
+  const [loggedInUser, setLoggedInUser] = useState({});
+  const { user, getAccessTokenSilently } = useAuth0();
+  const value = { loggedInUser, setLoggedInUser };
 
   console.log(user);
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/users`,
-        {
-          params: { email: loggedInUser.email },
-        }
+        `${process.env.REACT_APP_BACKEND_URL}/users/${user.email}`
       );
       console.log(data);
       if (data) {
@@ -40,12 +39,27 @@ function App() {
     if (user) {
       fetchUser();
     }
-  }, [loggedInUser, user]);
+  }, [user]);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.REACT_APP_AUDIENCE,
+          scope: "read:current_user",
+        },
+      });
+
+      localStorage.setItem("token", token);
+    };
+
+    fetchToken();
+  }, [getAccessTokenSilently]);
 
   return (
     <div className="App">
       <header className="App-header">
-        <UserContext.Provider value={loggedInUser}>
+        <UserContext.Provider value={value}>
           <ScrollToTop color="black" width="20" height="20" />
 
           <CustomNavbar />
@@ -53,10 +67,9 @@ function App() {
           <Routes>
             <Route index element={<HomePage />} />
 
-            <Route
-              path="/users/update"
-              element={<UserProfile setProfilePicUrl={setLoggedInUser} />}
-            />
+            <Route path="/user/update" element={<UserProfile />} />
+
+            <Route path="/user/dashboard" element={<Dashboard />} />
 
             <Route path="/listings" element={<Listings />} />
 

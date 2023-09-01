@@ -1,0 +1,21 @@
+.profile {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.profile img {
+  max-width: 30px;
+  max-height: 30px;
+  margin-right: 10px;
+}
+
+#navbarScrollingDropdown::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 1.5px;
+  transform: translateY(-50%);
+  border: 8px solid transparent;
+  border-top-color: #000;
+}

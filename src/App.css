@@ -1,6 +1,7 @@
 .App {
   text-align: center;
   font-family: "Courgette", cursive;
+  padding-top: 60px;
 }
 
 .App-header {
@@ -12,14 +13,30 @@
   font-size: calc(10px + 2vmin);
 }
 
-.profile {
-  display: flex;
-  align-items: center;
+.special-button {
   position: relative;
+  width: auto;
+  color: #ecf0f1;
+  text-decoration: none;
+  border-radius: 5px;
+  border: solid 1px wheat;
+  text-align: center;
+  padding: 6px 18px 4px;
+  margin: 1px;
+
+  -webkit-transition: all 0.1s;
+  -moz-transition: all 0.1s;
+  transition: all 0.1s;
+
+  -webkit-box-shadow: 0px 6px 0px #07516c;
+  -moz-box-shadow: 0px 6px 0px #07516c;
+  box-shadow: 0px 6px 0px #07516c;
 }
 
-.profile img {
-  max-width: 30px;
-  max-height: 30px;
-  margin-right: 10px;
+.special-button:active {
+  -webkit-box-shadow: 0px 2px 0px #07516c;
+  -moz-box-shadow: 0px 2px 0px #07516c;
+  box-shadow: 0px 2px 0px #07516c;
+  position: relative;
+  top: 4px;
 }
