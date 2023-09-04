@@ -36,6 +36,9 @@ export default function CustomNavbar() {
             <Nav.Link onClick={() => handleNavLinkClick("/rent")}>
               Rent
             </Nav.Link>
+            <Nav.Link onClick={() => handleNavLinkClick("/scam-alerts")}>
+              Scam Alerts
+            </Nav.Link>
 
             {isAuthenticated ? (
               <NavDropdown

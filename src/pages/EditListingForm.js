@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import {
   ref as storageRef,
@@ -14,10 +14,10 @@ import { UserContext } from "../App";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 
-// const VIDEO_STORAGE_KEY = "videos/";
 const PICTURE_STORAGE_KEY = "pictures/";
 
-export default function AddPropertyForm() {
+export default function EditListingForm() {
+  const { listingId } = useParams();
   const navigate = useNavigate();
   const [textInput, setTextInput] = useState({
     title: "",
@@ -53,11 +53,11 @@ export default function AddPropertyForm() {
   const [roomTypeOptions, setRoomTypeOptions] = useState([]);
   const [userRoomTypeOption, setUserRoomTypeOption] = useState("");
   const [availability, setAvailability] = useState("");
-  // const [videoFileInputFile, setVideoFileInputFile] = useState(null);
-  // const [videoFileInputValue, setVideoFileInputValue] = useState("");
   const [photoFileInputFiles, setPhotoFileInputFiles] = useState([]);
   const [photoFileInputValues, setPhotoFileInputValues] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const value = useContext(UserContext);
 
   useEffect(() => {
@@ -100,6 +100,73 @@ export default function AddPropertyForm() {
   }, []);
 
   useEffect(() => {
+    // Fetch property data based on the ID from the API and populate the form fields
+    const fetchPropertyData = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}`
+        );
+
+        // Update the state with the fetched property data
+        setTextInput({
+          title: data.title,
+          description: data.description,
+          fullAddress: data.fullAddress,
+        });
+
+        setNumberInput({
+          price: data.price.toString(),
+          postalCode: data.postalCode.toString(),
+        });
+
+        setUserSelectInput({
+          pubIncluded: data.pubIncluded,
+          paxCount: data.paxCount,
+          airCon: data.airCon ? "Yes" : "No",
+          internet: data.internet ? "Yes" : "No",
+          furnishedCondition: data.furnishedCondition,
+          level: data.level,
+          advertisedBy: data.advertisedBy,
+          leaseMonth: data.leaseMonth,
+          gender: data.gender,
+          cookingAllowed: data.cookingAllowed ? "Yes" : "No",
+          bedroomCount: data.bedroomCount,
+          washroomAttached: data.washroomAttached ? "Yes" : "No",
+          lift: data.lift ? "Yes" : "No",
+          washroomCount: data.washroomCount,
+          visitorAllowed: data.visitorAllowed ? "Yes" : "No",
+          petAllowed: data.petAllowed ? "Yes" : "No",
+        });
+
+        setUserLocationOption({
+          value: data.locationId,
+          label: data.locationName,
+        });
+        setUserPropertyTypeOption({
+          value: data.propertyTypeId,
+          label: data.propertyTypeName,
+        });
+        setUserRoomTypeOption({
+          value: data.roomTypeId,
+          label: data.roomTypeName,
+        });
+        setAvailability(data.availability.slice(0, 10));
+        setLatitude(data.latitude);
+        setLongitude(data.longitude);
+        setPhotoPreviews(
+          data.photoUrls &&
+            data.photoUrls.length > 0 &&
+            data.photoUrls.map((url) => ({ src: url, alt: "Property Photo" }))
+        );
+      } catch (error) {
+        console.error("Error fetching property data:", error);
+      }
+    };
+
+    fetchPropertyData();
+  }, [listingId]);
+
+  useEffect(() => {
     const callOneMapApi = async () => {
       if (numberInput.postalCode.length === 6) {
         try {
@@ -111,6 +178,8 @@ export default function AddPropertyForm() {
             ...textInput,
             fullAddress: data.results[0]?.ADDRESS || "",
           });
+          setLatitude(data.results[0]?.LATITUDE);
+          setLongitude(data.results[0]?.LONGITUDE);
         } catch (error) {
           console.error("Error fetching address:", error);
         }
@@ -138,20 +207,20 @@ export default function AddPropertyForm() {
     }));
   };
 
+  const handlePictureFileChange = ({ target }) => {
+    const { files } = target;
+    setPhotoFileInputFiles(files);
+    setPhotoFileInputValues(Array.from(files).map((file) => file.name));
+    const previewUrls = Array.from(files).map((file) =>
+      URL.createObjectURL(file)
+    );
+    setPhotoPreviews(previewUrls);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
-
-    // const uniqueVideoFileName = videoFileInputFile.name + uuidv4();
-    // const videoFileRef = storageRef(
-    //   storage,
-    //   `${VIDEO_STORAGE_KEY}${uniqueVideoFileName}`
-    // );
-
-    // await uploadBytes(videoFileRef, videoFileInputFile);
-
-    // const videoUrl = await getDownloadURL(videoFileRef);
 
     let photoUrls = [];
     if (photoFileInputFiles.length > 0) {
@@ -169,15 +238,15 @@ export default function AddPropertyForm() {
       }
     }
 
-    const { data } = await axios.post(
-      `${process.env.REACT_APP_BACKEND_URL}/listings`,
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}`,
       {
         title: textInput.title,
         description: textInput.description,
         fullAddress: textInput.fullAddress,
         price: numberInput.price,
         postalCode: numberInput.postalCode,
-        pubIncluded: userSelectInput.pubIncluded === "Yes" ? true : false,
+        pubIncluded: userSelectInput.pubIncluded,
         paxCount: userSelectInput.paxCount,
         airCon: userSelectInput.airCon === "Yes" ? true : false,
         internet: userSelectInput.internet === "Yes" ? true : false,
@@ -200,6 +269,8 @@ export default function AddPropertyForm() {
         availability,
         photoUrls,
         email: value.loggedInUser.email,
+        latitude,
+        longitude,
       },
       {
         headers: {
@@ -211,25 +282,9 @@ export default function AddPropertyForm() {
     navigate(`/listings/${data.id}`);
   };
 
-  // const handleVideoFileChange = ({ target }) => {
-  //   const { files, value } = target;
-  //   setVideoFileInputFile(files[0]);
-  //   setVideoFileInputValue(value);
-  // };
-
-  const handlePictureFileChange = ({ target }) => {
-    const { files } = target;
-    setPhotoFileInputFiles(files);
-    setPhotoFileInputValues(Array.from(files).map((file) => file.name));
-    const previewUrls = Array.from(files).map((file) =>
-      URL.createObjectURL(file)
-    );
-    setPhotoPreviews(previewUrls);
-  };
-
   return (
     <Container>
-      <Form.Label>Add A New Property</Form.Label>
+      <Form.Label>Edit Property</Form.Label>
       <Form onSubmit={handleSubmit}>
         <Row>
           <Col>
@@ -262,6 +317,7 @@ export default function AddPropertyForm() {
                 value={numberInput.price}
                 onChange={handleNumberInputChange}
                 required
+                min={1}
               />
             </Form.Group>
           </Col>
@@ -282,7 +338,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -350,7 +405,6 @@ export default function AddPropertyForm() {
             />
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -401,7 +455,6 @@ export default function AddPropertyForm() {
             </Form.Group>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -460,7 +513,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -512,7 +564,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -562,7 +613,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -610,7 +660,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>
@@ -657,7 +706,6 @@ export default function AddPropertyForm() {
             </Form.Select>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Label>Description</Form.Label>
@@ -675,7 +723,6 @@ export default function AddPropertyForm() {
             </Form.Group>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <Form.Group className="mb-3">
@@ -694,20 +741,24 @@ export default function AddPropertyForm() {
             </Form.Group>
           </Col>
 
-          {photoPreviews.map((previewUrl, index) => (
-            <div key={index}>
-              <img
-                src={previewUrl}
-                alt={`Preview ${index}`}
-                style={{ maxWidth: "100px", maxHeight: "100px" }}
-              />
-              <p>{photoFileInputValues[index]}</p>
-            </div>
-          ))}
+          {photoPreviews &&
+            photoPreviews.length > 0 &&
+            photoPreviews.map((previewUrl, index) => (
+              <div key={index}>
+                <img
+                  src={previewUrl}
+                  alt={`Preview ${index}`}
+                  style={{ maxWidth: "100px", maxHeight: "100px" }}
+                />
+                <p>{photoFileInputValues[index]}</p>
+              </div>
+            ))}
         </Row>
-
         <Button type="submit" className="special-button">
-          Submit
+          Update
+        </Button>
+        <Button onClick={() => navigate(-1)} className="special-button">
+          Cancel
         </Button>
       </Form>
     </Container>

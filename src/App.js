@@ -9,11 +9,11 @@ import ScrollToTop from "react-scroll-to-top";
 import UserProfile from "./pages/UserProfile";
 import Listings from "./pages/Listings";
 import Listing from "./pages/Listing";
-import ListingUpdateForm from "./pages/ListingUpdateForm";
-import AddPropertyForm from "./pages/AddPropertyForm";
-import Conversation from "./pages/Conversation";
+import EditListingForm from "./pages/EditListingForm";
+import AddListingForm from "./pages/AddListingForm";
 import CustomNavbar from "./components/CustomNavbar";
 import Dashboard from "./pages/Dashboard";
+import ScamAlerts from "./pages/ScamAlerts";
 
 export const UserContext = createContext();
 
@@ -23,7 +23,7 @@ function App() {
   const { user, getAccessTokenSilently } = useAuth0();
   const value = { loggedInUser, setLoggedInUser };
 
-  console.log(user);
+  console.log(loggedInUser);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -81,13 +81,13 @@ function App() {
             <Route
               path="/listings/:listingId/update"
               element={
-                <ListingUpdateForm listing={listing} setListing={setListing} />
+                <EditListingForm listing={listing} setListing={setListing} />
               }
             />
 
-            <Route path="/rent" element={<AddPropertyForm />} />
+            <Route path="/rent" element={<AddListingForm />} />
 
-            <Route path="/conversation" element={<Conversation />} />
+            <Route path="/scam-alerts" element={<ScamAlerts />} />
           </Routes>
         </UserContext.Provider>
       </header>

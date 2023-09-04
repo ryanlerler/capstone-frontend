@@ -9,11 +9,8 @@ import {
 } from "firebase/storage";
 import { storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
-import { useAuth0 } from "@auth0/auth0-react";
-import Filter from "bad-words";
+import { sanitizeInput } from "../utils/InputSanitizer";
 import { UserContext } from "../App";
-
-const filter = new Filter();
 
 export default function UserProfile() {
   const value = useContext(UserContext);
@@ -21,7 +18,6 @@ export default function UserProfile() {
   const [updatedProfile, setUpdatedProfile] = useState({});
   const [photoFileInputFile, setPhotoFileInputFile] = useState(null);
   const [photoFileInputValue, setPhotoFileInputValue] = useState("");
-  const { getAccessTokenSilently, user } = useAuth0();
   const [showToast, setShowToast] = useState(false);
   const [isFormUpdated, setIsFormUpdated] = useState(false);
 
@@ -51,12 +47,7 @@ export default function UserProfile() {
       return;
     }
 
-    const token = await getAccessTokenSilently({
-      authorizationParams: {
-        audience: process.env.REACT_APP_AUDIENCE,
-        scope: "read:current_user",
-      },
-    });
+    const token = localStorage.getItem("token");
 
     let profilePicUrl = null;
 
@@ -70,17 +61,13 @@ export default function UserProfile() {
 
     profilePicUrl = await getDownloadURL(pictureFileRef);
 
-    const sanitizedName = filter.isProfane(updatedProfile.name)
-      ? filter.clean(updatedProfile.name)
-      : updatedProfile.name;
-
     const { data } = await axios.put(
       `${process.env.REACT_APP_BACKEND_URL}/users`,
       {
-        name: sanitizedName || value.loggedInUser.name,
+        name: updatedProfile.name || value.loggedInUser.name,
         profilePicUrl: profilePicUrl || value.loggedInUser.profilePicUrl,
         contactNo: updatedProfile.contactNo || null,
-        email: user.email,
+        email: value.loggedInUser.email,
       },
       {
         headers: {
@@ -108,9 +95,19 @@ export default function UserProfile() {
   return (
     <div>
       <div>
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>Profile updated successfully!</Toast.Body>
+        </Toast>
+
         <Form onSubmit={handleUpdate}>
           <Form.Label className="fs-5">
-            <strong>Account:</strong> {user && user.email}
+            <strong>Account:</strong>{" "}
+            {value.loggedInUser && value.loggedInUser.email}
           </Form.Label>
           <br />
           <Form.Label className="fs-5">Display Name</Form.Label>
@@ -121,7 +118,7 @@ export default function UserProfile() {
               onChange={({ target }) =>
                 setUpdatedProfile((prev) => ({
                   ...prev,
-                  name: target.value,
+                  name: sanitizeInput(target.value),
                 }))
               }
               required
@@ -156,15 +153,6 @@ export default function UserProfile() {
               pattern="[0-9]{8}"
             />
           </Form.Group>
-
-          <Toast
-            show={showToast}
-            onClose={() => setShowToast(false)}
-            delay={3000}
-            autohide
-          >
-            <Toast.Body>Profile updated successfully!</Toast.Body>
-          </Toast>
 
           <Button type="submit" className="special-button">
             Update
