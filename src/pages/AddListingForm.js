@@ -52,7 +52,9 @@ export default function AddListingForm() {
   const [userPropertyTypeOption, setUserPropertyTypeOption] = useState("");
   const [roomTypeOptions, setRoomTypeOptions] = useState([]);
   const [userRoomTypeOption, setUserRoomTypeOption] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [availability, setAvailability] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   // const [videoFileInputFile, setVideoFileInputFile] = useState(null);
   // const [videoFileInputValue, setVideoFileInputValue] = useState("");
   const [photoFileInputFiles, setPhotoFileInputFiles] = useState([]);

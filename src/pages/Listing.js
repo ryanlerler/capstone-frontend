@@ -22,6 +22,9 @@ export default function Listing({ listing, setListing }) {
   const [commentInput, setCommentInput] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [nearbyListings, setNearbyListings] = useState([]);
+  const [nearbyPlaces, setNearbyPlaces] = useState([]);
+  const [placePhotos, setPlacePhotos] = useState({});
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const value = useContext(UserContext);
 
   const target = [listing.longitude, listing.latitude];
@@ -112,6 +115,62 @@ export default function Listing({ listing, setListing }) {
 
         setNearbyListings(nearby);
       });
+  }, [listing]);
+
+  useEffect(() => {
+    const fetchNearbyPlaces = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/places`,
+          {
+            params: {
+              latitude: listing.latitude,
+              longitude: listing.longitude,
+            },
+          }
+        );
+
+        // Calculate the distance for each amenity
+        const amenitiesWithDistance = response.data.map((amenity) => {
+          const amenityLocation = amenity.geometry.location;
+          const distance = calculateDistance(
+            listing.latitude,
+            listing.longitude,
+            amenityLocation.lat,
+            amenityLocation.lng
+          );
+          return { ...amenity, distance };
+        });
+
+        setNearbyPlaces(amenitiesWithDistance);
+
+        // Fetch photos for each nearby amenity
+        const photoRequests = amenitiesWithDistance.map((amenity) => {
+          return axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/places/photos`,
+            {
+              params: {
+                placeId: amenity.place_id,
+              },
+            }
+          );
+        });
+
+        const photoResponses = await Promise.all(photoRequests);
+        const photosData = photoResponses.map((response) => response.data);
+
+        const placePhotosData = {};
+        photosData.forEach((photos, index) => {
+          placePhotosData[amenitiesWithDistance[index].place_id] = photos;
+        });
+
+        setPlacePhotos(placePhotosData);
+      } catch (error) {
+        console.error("Error fetching nearby places:", error);
+      }
+    };
+
+    fetchNearbyPlaces();
   }, [listing]);
 
   const handleLike = async () => {
@@ -374,9 +433,42 @@ export default function Listing({ listing, setListing }) {
           </Link>
         )}
       </div>
+
       <div>
-        <GoogleMaps latitude={listing.latitude} longitude={listing.longitude} />
+        <GoogleMaps
+          latitude={listing.latitude}
+          longitude={listing.longitude}
+          nearbyPlaces={nearbyPlaces}
+          selectedPlace={selectedPlace}
+          setSelectedPlace={setSelectedPlace}
+        />
       </div>
+
+      <div>
+        <h2>Nearby Amenities</h2>
+        {selectedPlace ? (
+          <div>
+            {selectedPlace.name} - {selectedPlace.vicinity} (Distance:{" "}
+            {selectedPlace.distance.toFixed(2)} km)
+            <br />
+            {placePhotos[selectedPlace.place_id] && (
+              <div>
+                {placePhotos[selectedPlace.place_id].map((photoUrl, index) => (
+                  <img
+                    key={index}
+                    src={photoUrl}
+                    alt={`Amenity ${index + 1}`}
+                    className="place-photo"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p>Click on a marker above for more details.</p>
+        )}
+      </div>
+
       <div className="comments-section">
         <hr />
         <ListGroup>
@@ -479,7 +571,7 @@ export default function Listing({ listing, setListing }) {
               })}
           </ul>
         ) : (
-          <p> Nothing nearby</p>
+          <p> No listings nearby</p>
         )}
       </div>
     </div>
