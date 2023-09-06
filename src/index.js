@@ -18,7 +18,7 @@ root.render(
         "read:current_user update:current_user_metadata openid profile email",
     }}
   >
-    <BrowserRouter>
+    <BrowserRouter scrollRestoration="auto">
       <App />
     </BrowserRouter>
   </Auth0Provider>

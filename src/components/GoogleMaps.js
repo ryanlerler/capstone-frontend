@@ -79,7 +79,7 @@ export default function GoogleMaps({
     }
   };
 
-  // Function to fetch place details including photos, ratings, and reviews
+  // Function to fetch place details including ratings and reviews
   const fetchPlaceDetails = async (place) => {
     try {
       const response = await axios.get(
@@ -107,6 +107,20 @@ export default function GoogleMaps({
       zoom={15}
       onLoad={onLoad}
       onUnmount={onUnmount}
+      options={{
+        styles: [
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
+          {
+            featureType: "road",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
+        ],
+      }}
     >
       <Marker position={center} onLoad={(marker) => setCenterMarker(marker)} />
 

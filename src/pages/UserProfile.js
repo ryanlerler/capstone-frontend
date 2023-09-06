@@ -11,6 +11,8 @@ import { storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { sanitizeInput } from "../utils/InputSanitizer";
 import { UserContext } from "../App";
+import "../css/UserProfile.css";
+import { GiConfirmed, GiCancel } from "react-icons/gi";
 
 export default function UserProfile() {
   const value = useContext(UserContext);
@@ -94,7 +96,8 @@ export default function UserProfile() {
 
   return (
     <div>
-      <div>
+      <Form.Label>Update Profile</Form.Label>
+      <div className="profile-container">
         <Toast
           show={showToast}
           onClose={() => setShowToast(false)}
@@ -104,63 +107,65 @@ export default function UserProfile() {
           <Toast.Body>Profile updated successfully!</Toast.Body>
         </Toast>
 
-        <Form onSubmit={handleUpdate}>
-          <Form.Label className="fs-5">
-            <strong>Account:</strong>{" "}
-            {value.loggedInUser && value.loggedInUser.email}
-          </Form.Label>
-          <br />
-          <Form.Label className="fs-5">Display Name</Form.Label>
-          <Form.Group className="mb-3">
-            <Form.Control
-              type="text"
-              value={updatedProfile.name || ""}
-              onChange={({ target }) =>
-                setUpdatedProfile((prev) => ({
-                  ...prev,
-                  name: sanitizeInput(target.value),
-                }))
-              }
-              required
-              placeholder="Enter your display name"
-            />
-          </Form.Group>
+        <div className="form-container">
+          <Form onSubmit={handleUpdate}>
+            <Form.Label className="fs-5 profile-title">
+              <strong>Account:</strong>{" "}
+              {value.loggedInUser && value.loggedInUser.email}
+            </Form.Label>
+            <br />
+            <Form.Label className="fs-5">Display Name</Form.Label>
+            <Form.Group className="mb-3 form-group">
+              <Form.Control
+                type="text"
+                value={updatedProfile.name || ""}
+                onChange={({ target }) =>
+                  setUpdatedProfile((prev) => ({
+                    ...prev,
+                    name: sanitizeInput(target.value),
+                  }))
+                }
+                required
+                placeholder="Enter your display name"
+              />
+            </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fs-5">Profile Picture</Form.Label>
-            <Form.Control
-              type="file"
-              value={photoFileInputValue}
-              onChange={handlePictureFileChange}
-              accept="image/*"
-              required
-            />
-          </Form.Group>
+            <Form.Group className="mb-3 form-group">
+              <Form.Label className="fs-5">Profile Picture</Form.Label>
+              <Form.Control
+                type="file"
+                value={photoFileInputValue}
+                onChange={handlePictureFileChange}
+                accept="image/*"
+                required
+              />
+            </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label className="fs-5">Contact Number</Form.Label>
-            <Form.Control
-              type="text"
-              value={updatedProfile.contactNo || ""}
-              onChange={({ target }) =>
-                setUpdatedProfile((prev) => ({
-                  ...prev,
-                  contactNo: target.value,
-                }))
-              }
-              required
-              placeholder="Enter a valid 8-digit mobile no"
-              pattern="[0-9]{8}"
-            />
-          </Form.Group>
+            <Form.Group className="mb-3 form-group">
+              <Form.Label className="fs-5">Contact Number</Form.Label>
+              <Form.Control
+                type="text"
+                value={updatedProfile.contactNo || ""}
+                onChange={({ target }) =>
+                  setUpdatedProfile((prev) => ({
+                    ...prev,
+                    contactNo: target.value,
+                  }))
+                }
+                required
+                placeholder="Enter a valid 8-digit mobile no"
+                pattern="[0-9]{8}"
+              />
+            </Form.Group>
 
-          <Button type="submit" className="special-button">
-            Update
-          </Button>
-          <Button onClick={() => navigate(-1)} className="special-button">
-            Cancel
-          </Button>
-        </Form>
+            <Button type="submit" className="special-button">
+              <GiConfirmed />
+            </Button>
+            <Button onClick={() => navigate(-1)} className="special-button">
+              <GiCancel />
+            </Button>
+          </Form>
+        </div>
       </div>
     </div>
   );

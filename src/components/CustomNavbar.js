@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../App";
 import "../css/CustomNavbar.css";
+import { TfiAlert } from "react-icons/tfi";
+import { AiTwotoneHome } from "react-icons/ai";
+import { IoIosAddCircle } from "react-icons/io";
+import { IoSearchCircleSharp } from "react-icons/io5";
 
 export default function CustomNavbar() {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
@@ -18,6 +22,16 @@ export default function CustomNavbar() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
+  };
+
   return (
     <div>
       <Navbar expand="lg" className="bg-body-tertiary" fixed="top">
@@ -29,15 +43,17 @@ export default function CustomNavbar() {
             style={{ maxHeight: "100px" }}
             navbarScroll
           >
-            <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="/">
+              <AiTwotoneHome />
+            </Nav.Link>
             <Nav.Link onClick={() => handleNavLinkClick("/listings")}>
-              Listings
+              <IoSearchCircleSharp />
             </Nav.Link>
             <Nav.Link onClick={() => handleNavLinkClick("/rent")}>
-              Rent
+              <IoIosAddCircle />
             </Nav.Link>
             <Nav.Link onClick={() => handleNavLinkClick("/scam-alerts")}>
-              Scam Alerts
+              <TfiAlert />
             </Nav.Link>
 
             {isAuthenticated ? (
@@ -71,16 +87,7 @@ export default function CustomNavbar() {
                     Update Profile
                   </Button>
                   <NavDropdown.Divider />
-                  <Button
-                    onClick={() =>
-                      logout({
-                        logoutParams: {
-                          returnTo: window.location.origin,
-                        },
-                      })
-                    }
-                    variant="light"
-                  >
+                  <Button onClick={handleLogout} variant="light">
                     Log Out
                   </Button>
                 </NavDropdown.Item>

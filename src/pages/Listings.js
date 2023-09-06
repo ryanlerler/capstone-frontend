@@ -1,28 +1,40 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
-import { Button, Card, Row, Col, Container, Pagination } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Row,
+  Col,
+  Container,
+  Pagination,
+  Form,
+} from "react-bootstrap";
 import "../css/Listings.css";
 import { MdBed, MdBathtub, MdPeopleAlt } from "react-icons/md";
 import { formatRelative, subDays } from "date-fns";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
 
 export default function Listings() {
   const [listings, setListings] = useState([]);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [locations, setLocations] = useState([]);
-  const [activeLocation, setActiveLocation] = useState(locations[0]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
-
-  const sort = searchParams.get("sort");
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [locationOptions, setLocationOptions] = useState([]);
+  const [userLocationOption, setUserLocationOption] = useState("");
+  const [propertyTypeOptions, setPropertyTypeOptions] = useState([]);
+  const [userPropertyTypeOption, setUserPropertyTypeOption] = useState("");
+  const [roomTypeOptions, setRoomTypeOptions] = useState([]);
+  const [userRoomTypeOption, setUserRoomTypeOption] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
 
   useEffect(() => {
     const fetchLocations = async () => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/locations`
       );
-      setLocations(
+      setLocationOptions(
         data.map((option) => ({ value: option.id, label: option.name }))
       );
     };
@@ -31,27 +43,71 @@ export default function Listings() {
   }, []);
 
   useEffect(() => {
+    const fetchPropertyTypes = async () => {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/property-type`
+      );
+      setPropertyTypeOptions(
+        data.map((option) => ({ value: option.id, label: option.type }))
+      );
+    };
+
+    fetchPropertyTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchRoomTypes = async () => {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/room-type`
+      );
+      setRoomTypeOptions(
+        data.map((option) => ({ value: option.id, label: option.type }))
+      );
+    };
+
+    fetchRoomTypes();
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/listings`,
-        {
-          params: { sort: sort },
-        }
+        `${process.env.REACT_APP_BACKEND_URL}/listings`
       );
       setListings(data);
     };
 
     fetchData();
-  }, [sort]);
+  }, []);
 
-  const handleLocationClick = async (location, locationId) => {
-    setActiveLocation(location);
-    setSearchParams({ locationId: locationId });
+  const applyFilters = async (e) => {
+    console.log("filtered");
 
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_BACKEND_URL}/listings/locations/${locationId}`,
-      { params: { locationId: locationId } }
-    );
+    e.preventDefault();
+    let apiUrl = `${process.env.REACT_APP_BACKEND_URL}/listings/filter`;
+
+    const queryParams = {};
+
+    if (userLocationOption) {
+      queryParams.locationId = userLocationOption.value;
+    }
+
+    if (userPropertyTypeOption) {
+      queryParams.propertyTypeId = userPropertyTypeOption.value;
+    }
+
+    if (userRoomTypeOption) {
+      queryParams.roomTypeId = userRoomTypeOption.value;
+    }
+
+    if (minPrice) {
+      queryParams.minPrice = minPrice;
+    }
+
+    if (maxPrice) {
+      queryParams.maxPrice = maxPrice;
+    }
+
+    const { data } = await axios.get(apiUrl, { params: queryParams });
     setListings(data);
   };
 
@@ -92,37 +148,100 @@ export default function Listings() {
 
   return (
     <div>
-      {/* <Button
-        onClick={() => setSearchParams({ sort: "asc" })}
-        className="special-button"
-      >
-        Older
-      </Button>
-      <Button
-        onClick={() => setSearchParams({ sort: "desc" })}
-        className="special-button"
-      >
-        Recent
-      </Button>
-      <br />
-      <br />
-
       <Container>
-        <div className="location-container">
-          {locations.map((location, index) => (
-            <div
-              key={index}
-              className={`location ${
-                activeLocation === location ? "active" : ""
-              }`}
-              onClick={() => handleLocationClick(location, index + 1)}
-            >
-              {location.label}
-            </div>
-          ))}
-        </div>
-        <div className="footer-container"></div>
-      </Container> */}
+        <Form onSubmit={applyFilters}>
+          <Row>
+            <Col>
+              <Form.Label>
+                <small>District</small>
+              </Form.Label>
+              <Select
+                components={makeAnimated()}
+                options={locationOptions}
+                value={userLocationOption}
+                onChange={(selectedOption) =>
+                  setUserLocationOption(selectedOption)
+                }
+                styles={{
+                  option: (defaultStyles) => ({
+                    ...defaultStyles,
+                    color: "black",
+                  }),
+                }}
+                isClearable
+              />
+            </Col>
+
+            <Col>
+              <Form.Label>
+                <small>Property Type</small>
+              </Form.Label>
+              <Select
+                components={makeAnimated()}
+                options={propertyTypeOptions}
+                value={userPropertyTypeOption}
+                onChange={(selectedOption) =>
+                  setUserPropertyTypeOption(selectedOption)
+                }
+                styles={{
+                  option: (defaultStyles) => ({
+                    ...defaultStyles,
+                    color: "black",
+                  }),
+                }}
+                isClearable
+              />
+            </Col>
+
+            <Col>
+              <Form.Label>
+                <small>Room Type</small>
+              </Form.Label>
+              <Select
+                components={makeAnimated()}
+                options={roomTypeOptions}
+                value={userRoomTypeOption}
+                onChange={(selectedOption) =>
+                  setUserRoomTypeOption(selectedOption)
+                }
+                styles={{
+                  option: (defaultStyles) => ({
+                    ...defaultStyles,
+                    color: "black",
+                  }),
+                }}
+                isClearable
+              />
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Form.Group controlId="minPrice">
+                <Form.Label>Min Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  value={minPrice}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="maxPrice">
+                <Form.Label>Max Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  value={maxPrice}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Button type="submit" className="special-button">
+            Apply Filters
+          </Button>
+        </Form>
+      </Container>
 
       <Row xs={1} md={3} className="g-4">
         {listings

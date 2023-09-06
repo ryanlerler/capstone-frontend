@@ -1,7 +1,15 @@
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button, Form, ListGroup, Carousel, Row, Col } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  ListGroup,
+  Carousel,
+  Row,
+  Col,
+  Modal,
+} from "react-bootstrap";
 import EditCommentForm from "../components/EditCommentForm";
 import { formatDistance, formatRelative, subDays } from "date-fns";
 import { sanitizeInput } from "../utils/InputSanitizer";
@@ -14,6 +22,8 @@ import { BiSolidTrain } from "react-icons/bi";
 import { MdBed, MdBathtub, MdPeopleAlt, MdWifiPassword } from "react-icons/md";
 import { TbAirConditioning } from "react-icons/tb";
 import { FaElevator } from "react-icons/fa6";
+import { BiShareAlt } from "react-icons/bi";
+import { RiSendPlaneFill } from "react-icons/ri";
 
 export default function Listing({ listing, setListing }) {
   const { listingId } = useParams();
@@ -25,6 +35,10 @@ export default function Listing({ listing, setListing }) {
   const [nearbyPlaces, setNearbyPlaces] = useState([]);
   const [placePhotos, setPlacePhotos] = useState({});
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenImageSrc, setFullScreenImageSrc] = useState("");
+  const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
   const value = useContext(UserContext);
 
   const target = [listing.longitude, listing.latitude];
@@ -229,6 +243,47 @@ export default function Listing({ listing, setListing }) {
     setCommentInput("");
   };
 
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShowShareModal(false);
+  };
+
+  const copyListingLink = () => {
+    const listingURL = window.location.href;
+    navigator.clipboard.writeText(listingURL).then(() => {
+      alert("Listing URL copied to clipboard!");
+    });
+    handleCloseShareModal();
+  };
+
+  const shareOnFacebook = () => {
+    const listingURL = window.location.href;
+    const facebookShareURL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      listingURL
+    )}`;
+    window.open(facebookShareURL, "_blank");
+    handleCloseShareModal();
+  };
+
+  const shareOnTwitter = () => {
+    const listingURL = window.location.href;
+    const tweetText = encodeURIComponent(
+      `Check out this awesome listing: ${listing.title} ${listingURL}`
+    );
+    const twitterShareURL = `https://twitter.com/intent/tweet?text=${tweetText}`;
+    window.open(twitterShareURL, "_blank");
+    handleCloseShareModal();
+  };
+
+  const toggleFullScreen = (imageSrc, imageIndex) => {
+    setIsFullScreen(!isFullScreen);
+    setFullScreenImageSrc(imageSrc);
+    setFullScreenImageIndex(imageIndex);
+  };
+
   return (
     <div className="listing-container">
       <div className="top-section">
@@ -257,15 +312,40 @@ export default function Listing({ listing, setListing }) {
                 </Carousel>
               )} */}
 
-              <Carousel interval={null}>
+              <Carousel
+                interval={null}
+                className="carousel-container"
+                activeIndex={fullScreenImageIndex}
+                onSelect={() => {}}
+              >
                 {listing.files &&
                   listing.files.length > 0 &&
                   listing.files.map((file) => (
-                    <Carousel.Item key={file.id}>
-                      <img src={file.url} alt="file" className="listing-pic" />
+                    <Carousel.Item
+                      key={file.id}
+                      onClick={() => toggleFullScreen(file.url)}
+                    >
+                      <img
+                        src={file.url}
+                        alt="file"
+                        className="d-block w-100"
+                      />
                     </Carousel.Item>
                   ))}
               </Carousel>
+
+              {isFullScreen && (
+                <div
+                  className="fullscreen-modal"
+                  onClick={() => toggleFullScreen("")}
+                >
+                  <img
+                    src={fullScreenImageSrc}
+                    alt="file"
+                    className="fullscreen-image"
+                  />
+                </div>
+              )}
 
               <Row>
                 <Col>
@@ -374,6 +454,7 @@ export default function Listing({ listing, setListing }) {
                 <Col>Advertised By: {listing.advertisedBy}</Col>
               </Row>
 
+              <hr />
               <Row>
                 <Col>
                   Cooking Allowed:{" "}
@@ -387,12 +468,12 @@ export default function Listing({ listing, setListing }) {
                   Pet Allowed: {listing.petAllowed === true ? "Yes" : "No"}
                 </Col>
               </Row>
+              <hr />
 
               {value.loggedInUser.email &&
                 value.loggedInUser.email === listing.user.email && (
                   <Link to={`/listings/${listingId}/update`}></Link>
                 )}
-              <br />
 
               <small>
                 <img
@@ -422,17 +503,26 @@ export default function Listing({ listing, setListing }) {
           )}
         </div>
       </div>
-      <div>
-        Whatsapp:{" "}
-        {listing.user && (
-          <Link
-            to={`https://wa.me/65${listing.user.contactNo}`}
-            target="_blank"
-          >
-            {listing.user.contactNo}
-          </Link>
-        )}
-      </div>
+
+      {listing.user && listing.user.contactNo !== null ? (
+        <div>
+          Whatsapp:{" "}
+          {listing.user && (
+            //ToDo: CHANGE TO NETLIFY DEPLOYED LINK
+            <a
+              href={`https://wa.me/65${
+                listing.user.contactNo
+              }?text=Hello%20there,%20I'm%20interested%20in%20your%20listing%20@%20${`https://www.facebook.com`}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {listing.user.contactNo}
+            </a>
+          )}
+        </div>
+      ) : (
+        listing.user && <div>Email: {listing.user.email}</div>
+      )}
 
       <div>
         <GoogleMaps
@@ -443,7 +533,6 @@ export default function Listing({ listing, setListing }) {
           setSelectedPlace={setSelectedPlace}
         />
       </div>
-
       <div>
         <h2>Nearby Amenities</h2>
         {selectedPlace ? (
@@ -468,7 +557,6 @@ export default function Listing({ listing, setListing }) {
           <p>Click on a marker above for more details.</p>
         )}
       </div>
-
       <div className="comments-section">
         <hr />
         <ListGroup>
@@ -541,13 +629,12 @@ export default function Listing({ listing, setListing }) {
             />
           </Form.Group>
           <Button variant="primary" type="submit" className="special-button">
-            Submit
+            <RiSendPlaneFill />
           </Button>
         </Form>
       </div>
 
-      <br />
-      <div>
+      <div className="nearby-listings">
         <h2>Nearby Listings</h2>
         {nearbyListings && nearbyListings.length > 1 ? (
           <ul>
@@ -562,9 +649,21 @@ export default function Listing({ listing, setListing }) {
                 );
 
                 return (
-                  <li key={nearbyListing.id}>
+                  <li key={nearbyListing.id} className="nearby-listing-item">
                     <Link to={`/listings/${nearbyListing.id}`} target="_blank">
-                      {nearbyListing.title} ({distance.toFixed(2)} km)
+                      {nearbyListing.files &&
+                        nearbyListing.files.length > 0 && (
+                          <img
+                            src={nearbyListing.files[0].url}
+                            alt="file"
+                            className="nearby-listing-image"
+                          />
+                        )}
+                      <div>
+                        <>
+                          {nearbyListing.title} ({distance.toFixed(2)} km)
+                        </>
+                      </div>
                     </Link>
                   </li>
                 );
@@ -574,6 +673,27 @@ export default function Listing({ listing, setListing }) {
           <p> No listings nearby</p>
         )}
       </div>
+
+      <Button onClick={handleShare} variant="light">
+        <BiShareAlt /> Share
+      </Button>
+
+      <Modal show={showShareModal} onHide={handleCloseShareModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Share This Listing</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Share this listing via:</p>
+          <Button onClick={copyListingLink}>Copy Link</Button>{" "}
+          <Button onClick={shareOnFacebook}>Facebook</Button>{" "}
+          <Button onClick={shareOnTwitter}>Twitter</Button>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseShareModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

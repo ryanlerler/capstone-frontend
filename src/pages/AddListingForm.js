@@ -13,6 +13,8 @@ import { sanitizeInput } from "../utils/InputSanitizer";
 import { UserContext } from "../App";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
+import { RiSendPlaneFill } from "react-icons/ri";
+import { GiCancel } from "react-icons/gi";
 
 // const VIDEO_STORAGE_KEY = "videos/";
 const PICTURE_STORAGE_KEY = "pictures/";
@@ -237,7 +239,7 @@ export default function AddListingForm() {
 
   return (
     <Container>
-      <Form.Label>Add A New Property</Form.Label>
+      <Form.Label>Add A New Listing</Form.Label>
       <Form onSubmit={handleSubmit}>
         <Row>
           <Col>
@@ -708,7 +710,7 @@ export default function AddListingForm() {
               <img
                 src={previewUrl}
                 alt={`Preview ${index}`}
-                style={{ maxWidth: "100px", maxHeight: "100px" }}
+                style={{ maxWidth: "200px", maxHeight: "200px" }}
               />
               <p>{photoFileInputValues[index]}</p>
             </div>
@@ -716,10 +718,10 @@ export default function AddListingForm() {
         </Row>
 
         <Button type="submit" className="special-button">
-          Submit
+          <RiSendPlaneFill />
         </Button>
         <Button onClick={() => navigate(-1)} className="special-button">
-          Cancel
+          <GiCancel />
         </Button>
       </Form>
     </Container>

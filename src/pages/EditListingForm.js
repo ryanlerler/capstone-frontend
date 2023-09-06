@@ -13,6 +13,7 @@ import { sanitizeInput } from "../utils/InputSanitizer";
 import { UserContext } from "../App";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
+import { GiConfirmed, GiCancel } from "react-icons/gi";
 
 const PICTURE_STORAGE_KEY = "pictures/";
 
@@ -284,7 +285,7 @@ export default function EditListingForm() {
 
   return (
     <Container>
-      <Form.Label>Edit Property</Form.Label>
+      <Form.Label>Edit Listing</Form.Label>
       <Form onSubmit={handleSubmit}>
         <Row>
           <Col>
@@ -755,10 +756,10 @@ export default function EditListingForm() {
             ))}
         </Row>
         <Button type="submit" className="special-button">
-          Update
+          <GiConfirmed />
         </Button>
         <Button onClick={() => navigate(-1)} className="special-button">
-          Cancel
+          <GiCancel />
         </Button>
       </Form>
     </Container>

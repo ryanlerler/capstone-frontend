@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { sanitizeInput } from "../utils/InputSanitizer";
+import { TiEdit } from "react-icons/ti";
+import { GiCancel, GiConfirmed } from "react-icons/gi";
+import { MdDelete } from "react-icons/md";
 
 export default function EditCommentForm({ comment, setComments }) {
   const [editMode, setEditMode] = useState(false);
@@ -49,7 +52,7 @@ export default function EditCommentForm({ comment, setComments }) {
   return (
     <div>
       <Button onClick={() => setEditMode(!editMode)} className="special-button">
-        {editMode ? <>Cancel</> : "Edit"}
+        {editMode ? <GiCancel /> : <TiEdit />}
       </Button>
       <br />
       {editMode && (
@@ -72,13 +75,13 @@ export default function EditCommentForm({ comment, setComments }) {
             onClick={() => handleUpdateComment(comment.id)}
             className="special-button"
           >
-            Update
+            <GiConfirmed />
           </Button>
           <Button
             onClick={() => handleDeleteComment(comment.id)}
             className="special-button"
           >
-            Delete
+            <MdDelete />
           </Button>
         </div>
       )}

@@ -41,8 +41,8 @@ export default function HomePage() {
   return (
     <div>
       <Row xs={1} md={3} className="g-4">
-        {topLikedListings.map((listing, idx) => (
-          <Col key={idx}>
+        {topLikedListings.map((listing) => (
+          <Col key={listing.id}>
             <Card className="card">
               <div className="files-container">
                 {listing.files && listing.files.length > 0 && (

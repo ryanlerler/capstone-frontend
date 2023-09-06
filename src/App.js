@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import HomePage from "./pages/HomePage";
 import { useEffect, useState, createContext } from "react";
@@ -17,6 +17,16 @@ import ScamAlerts from "./pages/ScamAlerts";
 
 export const UserContext = createContext();
 
+function FixScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Scroll to the top of the page when the route changes
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 function App() {
   const [listing, setListing] = useState({});
   const [loggedInUser, setLoggedInUser] = useState({});
@@ -53,13 +63,16 @@ function App() {
       localStorage.setItem("token", token);
     };
 
-    fetchToken();
-  }, [getAccessTokenSilently]);
+    if (user) {
+      fetchToken();
+    }
+  }, [getAccessTokenSilently, user]);
 
   return (
     <div className="App">
       <header className="App-header">
         <UserContext.Provider value={value}>
+          <FixScrollToTop />
           <ScrollToTop color="black" width="20" height="20" />
 
           <CustomNavbar />
