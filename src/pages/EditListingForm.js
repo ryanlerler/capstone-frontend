@@ -1,7 +1,15 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Row,
+  Toast,
+  Modal,
+} from "react-bootstrap";
 import {
   ref as storageRef,
   uploadBytes,
@@ -14,6 +22,7 @@ import { UserContext } from "../App";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { GiConfirmed, GiCancel } from "react-icons/gi";
+import { MdDelete } from "react-icons/md";
 
 const PICTURE_STORAGE_KEY = "pictures/";
 
@@ -59,7 +68,18 @@ export default function EditListingForm() {
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const value = useContext(UserContext);
+
+  useEffect(() => {
+    if (confirmed) {
+      setTimeout(() => navigate(-1), 3000);
+    }
+  }, [confirmed, navigate]);
+
+  console.log(confirmed);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -281,6 +301,30 @@ export default function EditListingForm() {
     );
 
     navigate(`/listings/${data.id}`);
+  };
+
+  const handleDeleteListing = async () => {
+    const token = localStorage.getItem("token");
+
+    await axios.delete(
+      `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setShowToast(true);
+  };
+
+  const openConfirmation = () => {
+    setShowConfirmation(true);
+  };
+
+  const handleCloseConfirmation = (confirmed) => {
+    setShowConfirmation(false);
+    setConfirmed(confirmed);
   };
 
   return (
@@ -755,12 +799,55 @@ export default function EditListingForm() {
               </div>
             ))}
         </Row>
+
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>Listing deleted successfully!</Toast.Body>
+        </Toast>
+
         <Button type="submit" className="special-button">
           <GiConfirmed />
         </Button>
+
+        <Button onClick={openConfirmation} className="special-button">
+          <MdDelete />
+        </Button>
+
         <Button onClick={() => navigate(-1)} className="special-button">
           <GiCancel />
         </Button>
+
+        <Modal
+          show={showConfirmation}
+          onHide={() => handleCloseConfirmation(false)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Deletion</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to delete this listing?</Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => handleCloseConfirmation(false)}
+              className="special-button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                handleDeleteListing();
+                handleCloseConfirmation(true);
+              }}
+              className="special-button"
+            >
+              Confirm
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Form>
     </Container>
   );
