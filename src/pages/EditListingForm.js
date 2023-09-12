@@ -71,6 +71,7 @@ export default function EditListingForm() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [comments, setComments] = useState([]);
   const value = useContext(UserContext);
 
   useEffect(() => {
@@ -210,6 +211,18 @@ export default function EditListingForm() {
     callOneMapApi();
   }, [numberInput.postalCode]);
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}/comments`
+      );
+
+      setComments(data);
+    };
+
+    fetchComments();
+  }, [listingId]);
+
   const handleTextInputChange = ({ target }) => {
     const { name, value } = target;
     setTextInput({ ...textInput, [name]: sanitizeInput(value) });
@@ -325,6 +338,45 @@ export default function EditListingForm() {
   const handleCloseConfirmation = (confirmed) => {
     setShowConfirmation(false);
     setConfirmed(confirmed);
+  };
+
+  const generateDescription = async (e) => {
+    e.preventDefault();
+
+    const content = {
+      title: textInput.title,
+      fullAddress: textInput.fullAddress,
+      price: numberInput.price,
+      postalCode: numberInput.postalCode,
+      pubIncluded: userSelectInput.pubIncluded,
+      paxCount: userSelectInput.paxCount,
+      airCon: userSelectInput.airCon,
+      internet: userSelectInput.internet,
+      furnishedCondition: userSelectInput.furnishedCondition,
+      level: userSelectInput.level,
+      advertisedBy: userSelectInput.advertisedBy,
+      leaseMonth: userSelectInput.leaseMonth,
+      gender: userSelectInput.gender,
+      cookingAllowed: userSelectInput.cookingAllowed,
+      bedroomCount: userSelectInput.bedroomCount,
+      washroomAttached: userSelectInput.washroomAttached,
+      lift: userSelectInput.lift,
+      washroomCount: userSelectInput.washroomCount,
+      visitorAllowed: userSelectInput.visitorAllowed,
+      petAllowed: userSelectInput.petAllowed,
+      userLocationOption: userLocationOption.label,
+      userPropertyTypeOption: userPropertyTypeOption.label,
+      userRoomTypeOption: userRoomTypeOption.label,
+      availability: availability,
+    };
+
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/chatgpt`,
+      {
+        content: content,
+      }
+    );
+    setTextInput({ ...textInput, description: data });
   };
 
   return (
@@ -753,7 +805,16 @@ export default function EditListingForm() {
         </Row>
         <Row>
           <Col>
-            <Form.Label>Description</Form.Label>
+            <Form.Label>
+              Description{" "}
+              <Button onClick={generateDescription} variant="light">
+                <img
+                  src="https://www.dockhunt.com/_next/image?url=https%3A%2F%2Fdockhunt-images.nyc3.cdn.digitaloceanspaces.com%2F20b5071c-73d3-44ce-9210-9d3e337a2ccd&w=256&q=75"
+                  alt="chatgpt"
+                  style={{ height: "5vh" }}
+                />
+              </Button>
+            </Form.Label>
             <Form.Group className="mb-3">
               <Form.Control
                 name="description"
@@ -793,7 +854,7 @@ export default function EditListingForm() {
                 <img
                   src={previewUrl}
                   alt={`Preview ${index}`}
-                  style={{ maxWidth: "100px", maxHeight: "100px" }}
+                  style={{ maxWidth: "200px", maxHeight: "200px" }}
                 />
                 <p>{photoFileInputValues[index]}</p>
               </div>
@@ -828,7 +889,11 @@ export default function EditListingForm() {
           <Modal.Header closeButton>
             <Modal.Title>Confirm Deletion</Modal.Title>
           </Modal.Header>
-          <Modal.Body>Are you sure you want to delete this listing?</Modal.Body>
+          <Modal.Body>
+            {comments && comments.length > 0
+              ? "Sorry! You cannot delete this listing if there is a comment on it."
+              : "Are you sure you want to delete this listing?"}
+          </Modal.Body>
           <Modal.Footer>
             <Button
               onClick={() => handleCloseConfirmation(false)}
@@ -843,6 +908,7 @@ export default function EditListingForm() {
                 handleCloseConfirmation(true);
               }}
               className="special-button"
+              disabled={comments && comments.length > 0}
             >
               Confirm
             </Button>

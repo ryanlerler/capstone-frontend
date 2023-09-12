@@ -3,7 +3,7 @@
 }
 
 .verification-links {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .warning-message {
@@ -14,10 +14,10 @@
 .carousel-caption {
   background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 10px;
+  padding: 5px;
   text-align: center;
 }
 
 .carousel-caption h3 {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }

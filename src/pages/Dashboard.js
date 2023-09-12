@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { Tab, Tabs, Card, Row, Col } from "react-bootstrap";
+import { Tab, Tabs, Card, Row, Col, Button } from "react-bootstrap";
 import { UserContext } from "../App";
 import { Link } from "react-router-dom";
 import { MdBed, MdBathtub, MdPeopleAlt } from "react-icons/md";
@@ -42,6 +42,25 @@ export default function Dashboard() {
     fetchPostedListings();
   }, [value.loggedInUser.id]);
 
+  const handleRented = async (listingId) => {
+    const token = localStorage.getItem("token");
+
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}/rented`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (data) {
+      alert("Marked as 'Rented'! Your contact will be hidden from the listing.");
+    } else {
+      alert("Marked as 'Available'");
+    }
+  };
+
   return (
     <div>
       Dashboard
@@ -60,7 +79,7 @@ export default function Dashboard() {
                     <div className="files-container">
                       {listing.files && listing.files.length > 0 && (
                         <Card.Img
-                          src={listing.files[0].url}
+                          src={listing.files[listing.files.length - 1].url}
                           alt="file"
                           className="files"
                         />
@@ -115,6 +134,13 @@ export default function Dashboard() {
                       <TiEdit />
                     </Link>
                   </Card.Body>
+
+                  <Button
+                    variant="danger"
+                    onClick={() => handleRented(listing.id)}
+                  >
+                    {listing.rented ? "Mark as Available" : "Mark as Rented"}
+                  </Button>
                 </Card>
               </Col>
             ))}
@@ -128,18 +154,22 @@ export default function Dashboard() {
                 <Card className="card">
                   <Link to={`/listings/${listing.listing.id}`}>
                     <div className="files-container">
-                      {listing.listing.files &&
+                      {listing.listing.rented ? (
+                        <img
+                          src="https://www.grekodom.com/Images/GrDom/rented-com.jpg"
+                          alt="file"
+                          className="files"
+                        />
+                      ) : (
+                        listing.listing.files &&
                         listing.listing.files.length > 0 && (
                           <Card.Img
-                            src={
-                              listing.listing.files[
-                                listing.listing.files.length - 1
-                              ].url
-                            }
+                            src={listing.listing.files[0].url}
                             alt="file"
                             className="files"
                           />
-                        )}
+                        )
+                      )}
                     </div>
                   </Link>
 

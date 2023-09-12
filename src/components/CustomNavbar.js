@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../App";
 import "../css/CustomNavbar.css";
-import { TfiAlert } from "react-icons/tfi";
 import { AiTwotoneHome } from "react-icons/ai";
 import { IoIosAddCircle } from "react-icons/io";
 import { IoSearchCircleSharp } from "react-icons/io5";
+import { TbAlertTriangleFilled } from "react-icons/tb";
 
 export default function CustomNavbar() {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
@@ -53,7 +53,7 @@ export default function CustomNavbar() {
               <IoIosAddCircle />
             </Nav.Link>
             <Nav.Link onClick={() => handleNavLinkClick("/scam-alerts")}>
-              <TfiAlert />
+              <TbAlertTriangleFilled />
             </Nav.Link>
 
             {isAuthenticated ? (
@@ -74,7 +74,9 @@ export default function CustomNavbar() {
               >
                 <NavDropdown.Item>
                   <Button
-                    onClick={() => handleNavLinkClick("/user/dashboard")}
+                    onClick={() =>
+                      handleNavLinkClick(`/users/${value.loggedInUser.id}`)
+                    }
                     variant="light"
                   >
                     Dashboard

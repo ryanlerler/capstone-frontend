@@ -14,6 +14,7 @@ import AddListingForm from "./pages/AddListingForm";
 import CustomNavbar from "./components/CustomNavbar";
 import Dashboard from "./pages/Dashboard";
 import ScamAlerts from "./pages/ScamAlerts";
+import UserListings from "./pages/UserListings";
 
 export const UserContext = createContext();
 
@@ -82,7 +83,7 @@ function App() {
 
             <Route path="/user/update" element={<UserProfile />} />
 
-            <Route path="/user/dashboard" element={<Dashboard />} />
+            <Route path="/users/:userId" element={<Dashboard />} />
 
             <Route path="/listings" element={<Listings />} />
 
@@ -90,6 +91,8 @@ function App() {
               path="/listings/:listingId"
               element={<Listing listing={listing} setListing={setListing} />}
             />
+
+            <Route path="/listings/user/:userId" element={<UserListings />} />
 
             <Route
               path="/listings/:listingId/update"

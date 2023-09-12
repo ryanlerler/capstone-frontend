@@ -15,6 +15,7 @@ import { MdBed, MdBathtub, MdPeopleAlt } from "react-icons/md";
 import { formatRelative, subDays } from "date-fns";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
+import { HiMiniMapPin } from "react-icons/hi2";
 
 export default function Listings() {
   const [listings, setListings] = useState([]);
@@ -146,6 +147,19 @@ export default function Listings() {
     return pageNumbers;
   };
 
+  const clearFilters = async () => {
+    setUserLocationOption("");
+    setUserPropertyTypeOption("");
+    setUserRoomTypeOption("");
+    setMinPrice("");
+    setMaxPrice("");
+
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/listings`
+    );
+    setListings(data);
+  };
+
   return (
     <div>
       <Container>
@@ -214,15 +228,15 @@ export default function Listings() {
               />
             </Col>
           </Row>
-
           <Row>
             <Col>
               <Form.Group controlId="minPrice">
                 <Form.Label>Min Price</Form.Label>
                 <Form.Control
                   type="number"
-                  onChange={(e) => setMinPrice(e.target.value)}
+                  onChange={({ target }) => setMinPrice(target.value)}
                   value={minPrice}
+                  min={1}
                 />
               </Form.Group>
             </Col>
@@ -231,14 +245,18 @@ export default function Listings() {
                 <Form.Label>Max Price</Form.Label>
                 <Form.Control
                   type="number"
-                  onChange={(e) => setMaxPrice(e.target.value)}
+                  onChange={({ target }) => setMaxPrice(target.value)}
                   value={maxPrice}
+                  min={minPrice}
                 />
               </Form.Group>
             </Col>
           </Row>
           <Button type="submit" className="special-button">
-            Apply Filters
+            Apply Filter(s)
+          </Button>
+          <Button onClick={clearFilters} className="special-button">
+            Clear Filters
           </Button>
         </Form>
       </Container>
@@ -251,18 +269,35 @@ export default function Listings() {
               <Card className="card">
                 <Link to={`/listings/${listing.id}`}>
                   <div className="files-container">
-                    {listing.files && listing.files.length > 0 && (
-                      <Card.Img
-                        src={listing.files[0].url}
+                    {listing.rented ? (
+                      <img
+                        src="https://www.grekodom.com/Images/GrDom/rented-com.jpg"
                         alt="file"
                         className="files"
                       />
+                    ) : (
+                      listing.files &&
+                      listing.files.length > 0 && (
+                        <Card.Img
+                          src={listing.files[0].url}
+                          alt="file"
+                          className="files"
+                        />
+                      )
                     )}
                   </div>
                 </Link>
                 <Card.Body>
                   <Card.Title className="card-title">
                     <strong>{listing.location.name}</strong>
+                    <br />
+                    <HiMiniMapPin />{" "}
+                    <Link
+                      to={`https://www.google.com/maps/dir//Singapore+${listing.postalCode}`}
+                      target="_blank"
+                    >
+                      {listing.postalCode}
+                    </Link>{" "}
                   </Card.Title>
                   <Card.Footer>
                     <small>

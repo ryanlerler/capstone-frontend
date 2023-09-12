@@ -237,6 +237,45 @@ export default function AddListingForm() {
     setPhotoPreviews(previewUrls);
   };
 
+  const generateDescription = async (e) => {
+    e.preventDefault();
+
+    const content = {
+      title: textInput.title,
+      fullAddress: textInput.fullAddress,
+      price: numberInput.price,
+      postalCode: numberInput.postalCode,
+      pubIncluded: userSelectInput.pubIncluded,
+      paxCount: userSelectInput.paxCount,
+      airCon: userSelectInput.airCon,
+      internet: userSelectInput.internet,
+      furnishedCondition: userSelectInput.furnishedCondition,
+      level: userSelectInput.level,
+      advertisedBy: userSelectInput.advertisedBy,
+      leaseMonth: userSelectInput.leaseMonth,
+      gender: userSelectInput.gender,
+      cookingAllowed: userSelectInput.cookingAllowed,
+      bedroomCount: userSelectInput.bedroomCount,
+      washroomAttached: userSelectInput.washroomAttached,
+      lift: userSelectInput.lift,
+      washroomCount: userSelectInput.washroomCount,
+      visitorAllowed: userSelectInput.visitorAllowed,
+      petAllowed: userSelectInput.petAllowed,
+      userLocationOption: userLocationOption.label,
+      userPropertyTypeOption: userPropertyTypeOption.label,
+      userRoomTypeOption: userRoomTypeOption.label,
+      availability: availability,
+    };
+
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/chatgpt`,
+      {
+        content: content,
+      }
+    );
+    setTextInput({ ...textInput, description: data });
+  };
+
   return (
     <Container>
       <Form.Label>Add A New Listing</Form.Label>
@@ -671,13 +710,22 @@ export default function AddListingForm() {
 
         <Row>
           <Col>
-            <Form.Label>Description</Form.Label>
+            <Form.Label>
+              Description{" "}
+              <Button onClick={generateDescription} variant="light">
+                <img
+                  src="https://www.dockhunt.com/_next/image?url=https%3A%2F%2Fdockhunt-images.nyc3.cdn.digitaloceanspaces.com%2F20b5071c-73d3-44ce-9210-9d3e337a2ccd&w=256&q=75"
+                  alt="chatgpt"
+                  style={{ height: "5vh" }}
+                />
+              </Button>
+            </Form.Label>
             <Form.Group className="mb-3">
               <Form.Control
                 name="description"
                 as="textarea"
                 type="text"
-                placeholder="Description"
+                placeholder="AI-Generated or Your Own Description"
                 value={textInput.description}
                 onChange={handleTextInputChange}
                 required

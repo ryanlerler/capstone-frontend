@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Button,
@@ -24,6 +24,8 @@ import { TbAirConditioning } from "react-icons/tb";
 import { FaElevator } from "react-icons/fa6";
 import { BiShareAlt } from "react-icons/bi";
 import { RiSendPlaneFill } from "react-icons/ri";
+import VoiceRecognition from "../components/VoiceRecognition";
+import EmojiPicker from "emoji-picker-react";
 
 export default function Listing({ listing, setListing }) {
   const { listingId } = useParams();
@@ -39,7 +41,10 @@ export default function Listing({ listing, setListing }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenImageSrc, setFullScreenImageSrc] = useState("");
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const value = useContext(UserContext);
+  const textareaRef = useRef(null);
 
   const target = [listing.longitude, listing.latitude];
 
@@ -48,7 +53,7 @@ export default function Listing({ listing, setListing }) {
    * @param excludeFuture - whether to exclude future stations ({boolean}, default false)
    * @param radius - limit radius of search in meters ({numeric}, default 1000)
    */
-  const nearestMRT = getNearestMrt(target, false, 1000);
+  const nearestMRT = getNearestMrt(target, false, 750);
   console.log(nearestMRT);
 
   useEffect(() => {
@@ -231,7 +236,10 @@ export default function Listing({ listing, setListing }) {
 
     const { data } = await axios.post(
       `${process.env.REACT_APP_BACKEND_URL}/listings/${listingId}/comments`,
-      { text: commentInput, email: value.loggedInUser.email },
+      {
+        text: voiceTranscript || commentInput,
+        email: value.loggedInUser.email,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -282,6 +290,33 @@ export default function Listing({ listing, setListing }) {
     setIsFullScreen(!isFullScreen);
     setFullScreenImageSrc(imageSrc);
     setFullScreenImageIndex(imageIndex);
+  };
+
+  const handleVoiceTranscriptChange = (transcript) => {
+    setVoiceTranscript(transcript);
+  };
+
+  const insertEmoji = (emojiData) => {
+    const inputRef = textareaRef.current;
+
+    if (inputRef) {
+      const startPos = inputRef.selectionStart;
+      const endPos = inputRef.selectionEnd;
+      const inputValue = inputRef.value;
+      const emoji = String.fromCodePoint(parseInt(emojiData.unified, 16));
+      const updatedValue =
+        inputValue.substring(0, startPos) +
+        emoji +
+        inputValue.substring(endPos);
+
+      setCommentInput(updatedValue);
+      inputRef.focus();
+      inputRef.setSelectionRange(startPos + 2, startPos + 2);
+    }
+  };
+
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker);
   };
 
   return (
@@ -384,7 +419,7 @@ export default function Listing({ listing, setListing }) {
               <Row>
                 <Col>{listing.location.name}</Col>
                 <Col>
-                  Postal Code:
+                  Postal Code:{" "}
                   <Link
                     to={`https://www.google.com/maps/dir//Singapore+${listing.postalCode}`}
                     target="_blank"
@@ -475,14 +510,16 @@ export default function Listing({ listing, setListing }) {
                   <Link to={`/listings/${listingId}/update`}></Link>
                 )}
 
-              <small>
-                <img
-                  src={listing.user.profilePicUrl}
-                  alt="profile"
-                  className="comment-profile"
-                />
-                {listing.user.name}
-              </small>
+              <Link to={`/listings/user/${listing.userId}`}>
+                <small>
+                  <img
+                    src={listing.user.profilePicUrl}
+                    alt="profile"
+                    className="comment-profile"
+                  />
+                  {listing.user.name}
+                </small>
+              </Link>
 
               <br />
               <small>
@@ -504,7 +541,7 @@ export default function Listing({ listing, setListing }) {
         </div>
       </div>
 
-      {listing.user && listing.user.contactNo !== null ? (
+      {listing.user && listing.user.contactNo !== null && !listing.rented ? (
         <div>
           Whatsapp:{" "}
           {listing.user && (
@@ -512,7 +549,7 @@ export default function Listing({ listing, setListing }) {
             <a
               href={`https://wa.me/65${
                 listing.user.contactNo
-              }?text=Hello%20there,%20I'm%20interested%20in%20your%20listing%20@%20${`https://www.facebook.com`}`}
+              }?text=Hello%20there,%20I'm%20interested%20in%20your%20listing%20@%20${`http://localhost:3001/listings/${listing.id}`}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -521,7 +558,8 @@ export default function Listing({ listing, setListing }) {
           )}
         </div>
       ) : (
-        listing.user && <div>Email: {listing.user.email}</div>
+        listing.user &&
+        !listing.rented && <div>Email: {listing.user.email}</div>
       )}
 
       <div>
@@ -557,6 +595,7 @@ export default function Listing({ listing, setListing }) {
           <p>Click on a marker above for more details.</p>
         )}
       </div>
+
       <div className="comments-section">
         <hr />
         <ListGroup>
@@ -620,12 +659,28 @@ export default function Listing({ listing, setListing }) {
             <Form.Control
               as="textarea"
               type="text"
-              value={commentInput}
+              value={voiceTranscript || commentInput}
               placeholder="Enter comment"
               onChange={({ target }) =>
                 setCommentInput(sanitizeInput(target.value))
               }
               required
+              ref={textareaRef}
+              style={{ paddingRight: "40px" }}
+            />
+
+            {showEmojiPicker && <EmojiPicker onEmojiClick={insertEmoji} />}
+
+            <Button
+              variant="transparent"
+              className="position-absolute bottom-10 end-0 mb-2 me-2"
+              onClick={toggleEmojiPicker}
+            >
+              😃
+            </Button>
+
+            <VoiceRecognition
+              onTranscriptChange={handleVoiceTranscriptChange}
             />
           </Form.Group>
           <Button variant="primary" type="submit" className="special-button">
@@ -639,7 +694,10 @@ export default function Listing({ listing, setListing }) {
         {nearbyListings && nearbyListings.length > 1 ? (
           <ul>
             {nearbyListings
-              .filter((nearbyListing) => nearbyListing.id !== listing.id)
+              .filter(
+                (nearbyListing) =>
+                  nearbyListing.id !== listing.id && !nearbyListing.rented
+              )
               .map((nearbyListing) => {
                 const distance = calculateDistance(
                   listing.latitude,
