@@ -11,15 +11,25 @@ Javascript, PERN (PostgreSQL, Express.js, React.js, Node.js), React-Bootstrap, S
 **Screenshots**
 
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154255.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154411.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154444.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154459.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154526.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20155545.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20155614.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20155624.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20155643.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154342.png)
+
 ![Alt text](https://github.com/ryanlerler/capstone-frontend/blob/main/screenshots/Screenshot%202024-01-04%20154352.png)
 
 
