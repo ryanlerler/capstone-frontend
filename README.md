@@ -16,7 +16,7 @@ A platform to search for room and house for rent in Singapore. Each listing come
 
 **Technologies:**
 
-Javascript, PERN (PostgreSQL, Express.js, React.js, Node.js), React-Bootstrap, Sequelize.js, Google Firebase, Google Maps API, Google Places API, Open AI API, Auth0, Axios, DBeaver, DrawSQL
+Javascript, PERN (PostgreSQL, Express.js, React.js, Node.js), React-Bootstrap, Sequelize.js, Google Firebase, Google Maps API, Google Places API, Open AI API, Auth0, Netlify, Fly.io, Axios, DBeaver, DrawSQL
 
 **Screenshots**
 
