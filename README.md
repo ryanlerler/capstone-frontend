@@ -1,3 +1,13 @@
+**LOG IN CREDENTIALS**
+
+Email:
+
+lyp2726@outlook.com
+
+Password:
+
+111111
+
 **Capstone Full Stack App - Property Rental App**
 
 **Description:**
